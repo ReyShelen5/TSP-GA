@@ -37,20 +37,60 @@ def plot_ga_convergence(costs):
 
 
 def plot_route(individual):
-    m = Basemap(projection='lcc', resolution=None,
-                width=5E6, height=5E6,
-                lat_0=-15, lon_0=-56)
 
-    plt.axis('off')
+    # =====================================================
+    # ===== MODIFIED =====
+    # Automatically determine map boundaries
+    # =====================================================
+
+    lats = [g.lat for g in individual.genes]
+    lngs = [g.lng for g in individual.genes]
+
+    m = Basemap(
+        projection='merc',
+        llcrnrlat=min(lats)-2,
+        urcrnrlat=max(lats)+2,
+        llcrnrlon=min(lngs)-2,
+        urcrnrlon=max(lngs)+2,
+        resolution='i'
+    )
+
+    m.drawcoastlines()
+    m.drawcountries()
+
     plt.title("Shortest Route")
 
-    for i in range(0, len(individual.genes)):
-        x, y = m(individual.genes[i].lng, individual.genes[i].lat)
+    for i in range(len(individual.genes)):
 
-        plt.plot(x, y, 'ok', c='r', markersize=5)
-        if i == len(individual.genes) - 1:
-            x2, y2 = m(individual.genes[0].lng, individual.genes[0].lat)
+        city = individual.genes[i]
+
+        x, y = m(city.lng, city.lat)
+
+        plt.plot(x, y, 'ro', markersize=6)
+
+        # =====================================================
+        # ===== ADDED =====
+        # Display city name beside every point
+        # =====================================================
+
+        plt.text(
+            x,
+            y,
+            city.name,
+            fontsize=9,
+            color='blue'
+        )
+
+        if i == len(individual.genes)-1:
+            nxt = individual.genes[0]
         else:
-            x2, y2 = m(individual.genes[i+1].lng, individual.genes[i+1].lat)
+            nxt = individual.genes[i+1]
 
-        plt.plot([x, x2], [y, y2], 'k-', c='r')
+        x2, y2 = m(nxt.lng, nxt.lat)
+
+        plt.plot(
+            [x, x2],
+            [y, y2],
+            'r-',
+            linewidth=2
+        )
